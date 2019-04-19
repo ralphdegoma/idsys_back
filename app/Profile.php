@@ -5,16 +5,45 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Image;
 use Storage;
-
+use File;
 class Profile extends Model
 {
     //
+    public $thumbnail_url = "";
+
+    public function getThumbnailAttribute($value) {
+	    $path = storage_path('app/profile/' . $value);
+        if (!File::exists($path) || $value == "") {
+            $backup_image = url("/")."/images/thumb.png";
+            return $backup_image;
+        }
+        //exists
+        $url = url("/")."/api/storage/".$value;
+        return $url;
+	}
+
+	public function getSignatureAttribute($value) {
+	    $path = storage_path('app/signature/' . $value);
+        if (!File::exists($path) || $value == "") {
+            $backup_image = "";
+            return $backup_image;
+        }
+        //exists
+        $url = url("/")."/api/signature/".$value;
+        return $url;
+	}
+
+
 	public function getProfiles() {
 		$ins = new Profile();
 		return $ins->all();
 	}
-    public function saveProfile($data) {
 
+	public function getProfile($id) {
+		$ins = new Profile();
+		return $ins->where("id", $id)->first();
+	}
+    public function saveProfile($data) {
 
     	$sig_path = "";
     	$profile_path = "";
@@ -40,7 +69,15 @@ class Profile extends Model
 		    Storage::disk('local')->put($path, $img, 'public');
     	}
 
-		$ins               = new Profile();
+
+    	if(isset($data["id"]) && !empty($data["id"])) {
+    		$ins               =  Profile::find($data["id"]);
+    	}else{
+    		$ins               = new Profile();
+    	}
+		
+
+
 		$ins->first_name   = $data["first_name"];
 		$ins->last_name    = $data["last_name"];
 		$ins->gender       = $data["gender"];

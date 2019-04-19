@@ -50,4 +50,36 @@ class ProfileController extends Controller
     	}
     	
     }
+
+    public function show($id, Profile $profile_ins) {
+        try {
+
+            $validator = Validator::make(["id" => $id], array(
+                    'id'         => 'required|max:255',
+                    )
+                );
+
+            if($validator->fails()) {
+                $error_messages = implode(',', $validator->messages()->all());
+                return response()->json([
+                    'status' => '400',
+                    'message' =>  $error_messages,
+                ]);
+            }
+
+            $data = $profile_ins->getProfile($id);
+
+            return response()->json([
+                'status' => '200',
+                'data' => $data,
+                'message' => 'Successfull',
+            ]);
+
+        } catch (Exception $e) {
+
+            $error_message = $e->getMessage();
+            return response($error_message, 500);
+
+        }
+    }
 }

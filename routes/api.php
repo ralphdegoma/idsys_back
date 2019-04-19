@@ -30,6 +30,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::get('/logout', 'Api\AuthController@logout')->name('logout');
         Route::post('/profile', 'ProfileController@store')->name('register_profile.api');
         Route::get('/profile', 'ProfileController@index')->name('list_profile.api');
+        Route::get('/profile/{id}', 'ProfileController@show')->name('profile_details.api');
     });
 
 
@@ -47,6 +48,23 @@ Route::group(['middleware' => ['json.response']], function () {
 
             return $response;
             
+        }
+
+        $file = File::get($path);
+        $type = File::mimeType($path);
+
+        $response = Response::make($file, 200);
+        $response->header("Content-Type", $type);
+
+        return $response;
+    });
+
+
+    Route::get('/signature/{filename}', function ($filename)
+    {
+        $path = storage_path('app/signature/' . $filename);
+        if (!File::exists($path)) {
+            return "";
         }
 
         $file = File::get($path);
